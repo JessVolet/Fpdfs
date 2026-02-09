@@ -1,16 +1,50 @@
-# React + Vite
+# EduDraft Pro - Theme System Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+EduDraft Pro allows you to completely customize the appearance of your documents using the Theme System. You can define styles for the **Cover**, **Content**, and **Final** pages.
 
-Currently, two official plugins are available:
+## Theme File Structure (.json)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Themes are simple JSON files that define layers for different page types.
 
-## React Compiler
+```json
+{
+  "id": "unique-theme-id",
+  "name": "My Custom Theme",
+  "layers": {
+    "cover": {
+      "containerClass": "bg-slate-900 text-white",
+      "style": { "backgroundColor": "#0f172a" },
+      "elements": [
+        { 
+          "className": "absolute top-0 left-0 w-full h-32 bg-indigo-500",
+          "style": { "opacity": 0.5 }
+        }
+      ]
+    },
+    "content": {
+      "containerClass": "bg-white text-slate-800",
+      "elements": []
+    },
+    "final": {
+      "containerClass": "bg-slate-900 text-white flex flex-col items-center justify-center p-20",
+      "elements": []
+    }
+  }
+}
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## How to Import a Theme
+1.  Go to the **Themes** tab in the sidebar.
+2.  Click **Select File** under "Import Theme".
+3.  Choose your `.json` file.
+4.  The theme will appear in your Library and can be selected in the "Active Configuration" section.
 
-## Expanding the ESLint configuration
+## Styling Guidelines
+-   **Dimensions**: The document uses **Letter size** (8.5in x 11in).
+-   **CSS Classes**: You can use tailwind classes in `containerClass` and `elements[].className`.
+-   **Inline Styles**: Use the `style` object for custom CSS properties (e.g., gradients, specific colors).
+-   **Geometric Shapes**: Add objects to the `elements` array. Use `absolute` positioning to place them relative to the page.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Important Notes on Printing
+-   **Backgrounds**: Ensure your browser's print settings have "Background Graphics" enabled.
+-   **Margins**: The system is designed for borderless printing (`margin: 0` in CSS). Ensure your printer settings match this or scale to fit.
