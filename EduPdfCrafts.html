@@ -1,0 +1,398 @@
+import React, { useState, useRef } from 'react';
+import { 
+  Download, Plus, Trash2, Layout, FileText, User, Type, 
+  Info, AlignLeft, List, Grid, Image as ImageIcon, 
+  ChevronUp, ChevronDown, School, BookOpen, Upload, FileJson, CheckCircle2
+} from 'lucide-react';
+
+const App = () => {
+  const [coverType, setCoverType] = useState('full');
+  const [importStatus, setImportStatus] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const [docData, setDocData] = useState({
+    institution: 'INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISC)',
+    subject: 'Administración de Redes',
+    professor: 'Profra. Ana Cecilia Segundo',
+    semester: 'OCTAVO SEMESTRE',
+    title: 'CONCEPTOS WAN',
+    subtitle: 'Actividad Packet Tracer 7.6.1 - Cuadro Comparativo',
+    author: 'JOSE DE JESUS VEGA ORTIZ',
+    date: new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }),
+    email: 'jose.vega@tecnologico.edu.mx',
+    sections: [
+      { 
+        id: 'init-1', 
+        type: 'text', 
+        title: 'Introducción', 
+        content: 'Bienvenido al generador automático. Puedes editar estos campos o importar un archivo HTML para llenar el reporte en segundos.' 
+      }
+    ]
+  });
+
+  // --- LÓGICA DE IMPORTACIÓN ---
+  const handleImportFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target.result;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      
+      const newSections = [];
+      
+      // Intentar extraer metadatos
+      const metaAuthor = doc.querySelector('meta[name="author"]')?.content;
+      const metaSubject = doc.querySelector('meta[name="subject"]')?.content;
+      const h1 = doc.querySelector('h1')?.innerText;
+      const h2 = doc.querySelector('h2')?.innerText;
+
+      // Procesar nodos del cuerpo
+      const bodyElements = doc.body.children;
+      Array.from(bodyElements).forEach((el, idx) => {
+        const id = `import-${idx}-${Math.random().toString(36).substr(2, 5)}`;
+        
+        if (el.tagName === 'P') {
+          newSections.push({ id, type: 'text', title: 'Información', content: el.innerText });
+        } else if (el.tagName === 'UL' || el.tagName === 'OL') {
+          const items = Array.from(el.querySelectorAll('li')).map(li => li.innerText);
+          newSections.push({ id, type: 'list', title: 'Puntos Clave', items });
+        } else if (el.tagName === 'TABLE') {
+          const headers = Array.from(el.querySelectorAll('th')).map(th => th.innerText);
+          const rows = Array.from(el.querySelectorAll('tr'))
+            .filter(tr => tr.querySelector('td'))
+            .map(tr => Array.from(tr.querySelectorAll('td')).map(td => td.innerText));
+          newSections.push({ 
+            id, 
+            type: 'table', 
+            title: 'Cuadro Comparativo', 
+            headers: headers.length ? headers : (rows[0]?.map((_, i) => `Col ${i+1}`) || []), 
+            rows 
+          });
+        } else if (el.tagName === 'IMG') {
+          newSections.push({ id, type: 'image', url: el.src, caption: el.alt || 'Imagen importada', ref: 'Fuente: Archivo' });
+        } else if (el.tagName === 'H3' || el.tagName === 'H4') {
+          // Si es un subtítulo, lo usamos para la siguiente sección si es posible
+        }
+      });
+
+      setDocData(prev => ({
+        ...prev,
+        title: h1 || prev.title,
+        subtitle: h2 || prev.subtitle,
+        author: metaAuthor || prev.author,
+        subject: metaSubject || prev.subject,
+        sections: newSections.length ? newSections : prev.sections
+      }));
+
+      setImportStatus('success');
+      setTimeout(() => setImportStatus(null), 3000);
+    };
+    reader.readAsText(file);
+  };
+
+  // --- GESTIÓN DE SECCIONES MANUAL ---
+  const addSection = (type) => {
+    const newSection = {
+      id: Math.random().toString(36).substr(2, 9),
+      type,
+      title: 'Nueva Sección',
+      ...(type === 'text' && { content: 'Contenido...' }),
+      ...(type === 'table' && { headers: ['Encabezado 1', 'Encabezado 2'], rows: [['Dato A', 'Dato B']] }),
+      ...(type === 'list' && { items: ['Nuevo ítem'] }),
+      ...(type === 'image' && { url: '', caption: '', ref: '' })
+    };
+    setDocData({ ...docData, sections: [...docData.sections, newSection] });
+  };
+
+  const updateSection = (id, newData) => {
+    setDocData({
+      ...docData,
+      sections: docData.sections.map(s => s.id === id ? { ...s, ...newData } : s)
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0d0f17] text-slate-200 flex flex-col md:flex-row font-sans">
+      
+      {/* SIDEBAR DE CONTROL */}
+      <div className="w-full md:w-[440px] bg-[#141724] p-6 shadow-2xl overflow-y-auto border-r border-violet-500/10 print:hidden scrollbar-hide pb-24">
+        
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <School size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-black tracking-tighter text-white uppercase italic">Edu<span className="text-violet-500">Draft</span> PRO</h1>
+              <p className="text-[8px] uppercase tracking-[0.3em] text-slate-500 font-bold">Smart Productivity Engine</p>
+            </div>
+          </div>
+          {importStatus === 'success' && (
+            <div className="flex items-center gap-1 text-emerald-400 text-[10px] font-bold animate-bounce">
+              <CheckCircle2 size={14} /> ¡IMPORTADO!
+            </div>
+          )}
+        </div>
+
+        {/* BOTÓN DE IMPORTACIÓN */}
+        <div className="mb-8">
+          <button 
+            onClick={() => fileInputRef.current.click()}
+            className="w-full bg-slate-800 hover:bg-slate-700 border-2 border-dashed border-slate-700 hover:border-violet-500/50 rounded-2xl p-4 transition-all group flex flex-col items-center gap-2"
+          >
+            <Upload className="text-slate-500 group-hover:text-violet-400 group-hover:scale-110 transition-all" size={24} />
+            <div className="text-center">
+              <p className="text-xs font-bold text-white uppercase tracking-widest">Importar Archivo HTML</p>
+              <p className="text-[9px] text-slate-500 mt-1 italic">Carga automática de textos, listas y tablas</p>
+            </div>
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleImportFile} 
+            accept=".html,.htm,.txt" 
+            className="hidden" 
+          />
+        </div>
+
+        <section className="space-y-6">
+          {/* Datos del Estudiante */}
+          <div className="bg-slate-900/40 p-5 rounded-3xl border border-slate-800/50 space-y-4">
+            <h3 className="text-[10px] font-black uppercase text-violet-400 tracking-[0.2em] flex items-center gap-2">
+              <BookOpen size={14} /> Información del Curso
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              <input className="w-full bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 text-xs outline-none focus:border-violet-500 transition-all" placeholder="Institución" value={docData.institution} onChange={(e) => setDocData({...docData, institution: e.target.value})} />
+              <input className="w-full bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 text-xs outline-none focus:border-violet-500 transition-all" placeholder="Materia" value={docData.subject} onChange={(e) => setDocData({...docData, subject: e.target.value})} />
+              <input className="w-full bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 text-xs outline-none focus:border-violet-500 transition-all" placeholder="Título" value={docData.title} onChange={(e) => setDocData({...docData, title: e.target.value})} />
+              <div className="flex gap-2">
+                 <input className="w-1/2 bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 text-xs" placeholder="Autor" value={docData.author} onChange={(e) => setDocData({...docData, author: e.target.value})} />
+                 <input className="w-1/2 bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 text-xs" placeholder="Fecha" value={docData.date} onChange={(e) => setDocData({...docData, date: e.target.value})} />
+              </div>
+            </div>
+          </div>
+
+          {/* Constructor de Secciones */}
+          <div className="space-y-4">
+             <div className="flex justify-between items-center">
+                <h3 className="text-[10px] font-black uppercase text-violet-400 tracking-[0.2em]">Componentes</h3>
+                <div className="flex gap-1">
+                   <button onClick={() => setCoverType('full')} className={`px-3 py-1 text-[9px] font-black rounded-full transition-all ${coverType === 'full' ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-500'}`}>Full</button>
+                   <button onClick={() => setCoverType('rapid')} className={`px-3 py-1 text-[9px] font-black rounded-full transition-all ${coverType === 'rapid' ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-500'}`}>Rapid</button>
+                </div>
+             </div>
+             
+             <div className="grid grid-cols-4 gap-2">
+                {[
+                  { t: 'text', i: AlignLeft, l: 'Texto' },
+                  { t: 'table', i: Grid, l: 'Tabla' },
+                  { t: 'list', i: List, l: 'Lista' },
+                  { t: 'image', i: ImageIcon, l: 'Imagen' }
+                ].map(b => (
+                  <button key={b.t} onClick={() => addSection(b.t)} className="flex flex-col items-center gap-1 p-3 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-violet-600/20 hover:border-violet-500/50 transition-all group">
+                    <b.i size={18} className="text-violet-500 group-hover:scale-110 transition-transform" />
+                    <span className="text-[8px] font-black uppercase text-slate-500 group-hover:text-white">{b.l}</span>
+                  </button>
+                ))}
+             </div>
+          </div>
+
+          {/* Listado de Contenido Editables */}
+          <div className="space-y-4 overflow-hidden">
+             {docData.sections.map((sec, idx) => (
+               <div key={sec.id} className="bg-slate-900/60 border border-slate-800/50 rounded-2xl p-4 group">
+                 <div className="flex justify-between items-center mb-3">
+                    <span className="text-[9px] font-black text-violet-400 uppercase tracking-widest">{idx + 1}. {sec.type}</span>
+                    <button onClick={() => setDocData({...docData, sections: docData.sections.filter(s => s.id !== sec.id)})} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button>
+                 </div>
+                 <input className="w-full bg-transparent border-b border-slate-800 pb-1 text-xs font-bold text-white mb-2 outline-none" value={sec.title} onChange={(e) => updateSection(sec.id, {title: e.target.value})} />
+                 
+                 {sec.type === 'text' && (
+                   <textarea className="w-full bg-slate-800/50 p-2 text-[10px] rounded-lg h-16 outline-none text-slate-400" value={sec.content} onChange={(e) => updateSection(sec.id, {content: e.target.value})} />
+                 )}
+                 {sec.type === 'list' && (
+                   <div className="space-y-1">
+                     {sec.items.map((it, i) => (
+                        <input key={i} className="w-full bg-slate-800/30 p-1 text-[9px] rounded" value={it} onChange={(e) => {
+                          const newItems = [...sec.items]; newItems[i] = e.target.value; updateSection(sec.id, {items: newItems});
+                        }} />
+                     ))}
+                     <button className="text-[8px] text-violet-500 font-bold" onClick={() => updateSection(sec.id, {items: [...sec.items, '']})}>+ Ítem</button>
+                   </div>
+                 )}
+               </div>
+             ))}
+          </div>
+        </section>
+
+        {/* BOTÓN FLOTANTE GENERAR */}
+        <div className="fixed bottom-0 left-0 w-full md:w-[440px] p-6 bg-[#141724]/90 backdrop-blur-md border-t border-slate-800 z-50">
+           <button onClick={() => window.print()} className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-violet-600/30 transform transition-all active:scale-95">
+              <Download size={20} /> GENERAR REPORTE PDF
+           </button>
+        </div>
+      </div>
+
+      {/* ÁREA DE PREVIEW A4 */}
+      <div className="flex-1 p-4 md:p-12 overflow-y-auto flex justify-center items-start bg-slate-950 scrollbar-hide">
+        <div id="pdf-content" className="bg-white text-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.5)] w-[210mm] min-h-[297mm] relative overflow-hidden print:m-0 print:shadow-none print:w-full">
+          
+          <style>{`
+            @media print {
+              body * { visibility: hidden; }
+              #pdf-content, #pdf-content * { visibility: visible; }
+              #pdf-content { position: absolute; left: 0; top: 0; }
+              @page { margin: 0; size: A4; }
+              .page-break { page-break-after: always; }
+            }
+            .main-gradient { background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); }
+            .geometric-mask { clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%); }
+          `}</style>
+
+          {/* PORTADA COMPLETA */}
+          {coverType === 'full' && (
+            <section className="h-[297mm] relative p-20 flex flex-col justify-between page-break bg-slate-50">
+              <div className="absolute inset-0 main-gradient geometric-mask h-[65%] z-0" />
+              
+              <div className="relative z-10 text-center text-white mt-12">
+                 <p className="text-xs font-black tracking-[0.4em] uppercase opacity-70 mb-4">{docData.institution}</p>
+                 <div className="w-12 h-1 bg-violet-400 mx-auto mb-12" />
+                 <h1 className="text-7xl font-black uppercase tracking-tight leading-[0.9] mb-6 drop-shadow-2xl">
+                    {docData.title}
+                 </h1>
+                 <p className="text-xl font-light text-violet-200 italic max-w-xl mx-auto">{docData.subtitle}</p>
+              </div>
+
+              <div className="relative z-10 grid grid-cols-2 gap-12 border-t border-slate-200 pt-16">
+                 <div className="space-y-8">
+                    <div>
+                       <p className="text-[10px] font-black uppercase text-violet-600 tracking-widest mb-2">Asignatura</p>
+                       <p className="text-xl font-bold text-slate-900">{docData.subject}</p>
+                       <p className="text-sm text-slate-500 font-medium">{docData.professor}</p>
+                    </div>
+                 </div>
+                 <div className="text-right space-y-8">
+                    <div>
+                       <p className="text-[10px] font-black uppercase text-violet-600 tracking-widest mb-2">Presentado por</p>
+                       <p className="text-2xl font-black text-slate-900">{docData.author}</p>
+                       <p className="text-sm text-slate-500">{docData.semester}</p>
+                       <p className="text-xs text-violet-400 font-bold mt-2">{docData.date}</p>
+                    </div>
+                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* CUERPO DEL INFORME */}
+          <main className="p-20 relative min-h-[297mm] bg-white">
+            
+            {/* Cabecera Rápida */}
+            {coverType === 'rapid' && (
+              <div className="mb-16 border-b-2 border-slate-100 pb-10 relative">
+                 <div className="absolute -top-20 -left-20 -right-20 h-48 main-gradient geometric-mask opacity-10" />
+                 <div className="flex justify-between items-start relative z-10">
+                    <div className="max-w-[70%]">
+                       <h2 className="text-xs font-black text-violet-700 uppercase tracking-widest mb-1">{docData.subject}</h2>
+                       <h1 className="text-4xl font-black text-slate-900 uppercase leading-none">{docData.title}</h1>
+                       <p className="text-sm text-slate-400 font-medium mt-2 italic">{docData.subtitle}</p>
+                    </div>
+                    <div className="text-right">
+                       <p className="text-[10px] font-black text-slate-900 uppercase">{docData.author}</p>
+                       <p className="text-[10px] font-bold text-violet-500">{docData.date}</p>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {/* SECCIONES DINÁMICAS */}
+            <div className="space-y-16">
+              {docData.sections.map((section) => (
+                <div key={section.id} className="relative">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-1.5 h-6 bg-gradient-to-b from-violet-600 to-indigo-600 rounded-full" />
+                    <h3 className="text-lg font-black uppercase tracking-widest text-slate-800">{section.title}</h3>
+                    <div className="h-[1px] flex-1 bg-slate-100" />
+                  </div>
+
+                  {section.type === 'text' && (
+                    <p className="text-xs text-slate-600 leading-relaxed text-justify whitespace-pre-wrap pl-6 border-l-2 border-violet-50 italic">
+                      {section.content}
+                    </p>
+                  )}
+
+                  {section.type === 'table' && (
+                    <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm ml-6">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-100">
+                            {section.headers.map((h, i) => (
+                              <th key={i} className="p-4 text-[10px] font-black uppercase text-violet-700 tracking-tight">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {section.rows.map((row, i) => (
+                            <tr key={i} className="border-b border-slate-50 last:border-none hover:bg-slate-50/50 transition-colors">
+                              {row.map((cell, j) => (
+                                <td key={j} className={`p-4 text-[10px] leading-snug ${j === 0 ? 'font-bold text-slate-800 bg-slate-50/20' : 'text-slate-600'}`}>
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {section.type === 'list' && (
+                    <div className="grid grid-cols-1 gap-3 pl-10">
+                      {section.items.map((item, i) => (
+                        <div key={i} className="flex gap-4 items-center group">
+                          <div className="w-2 h-2 rounded-full bg-violet-400 group-hover:scale-125 transition-transform" />
+                          <p className="text-xs font-medium text-slate-600">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {section.type === 'image' && (
+                    <div className="ml-6 space-y-4">
+                      <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl group">
+                         <img src={section.url || 'https://via.placeholder.com/800x400?text=Importar+URL+Imagen'} className="w-full object-cover max-h-[350px]" alt="preview" />
+                      </div>
+                      <div className="flex justify-between items-center px-4">
+                        <span className="text-[10px] italic text-slate-400 font-medium">Fig. {Math.floor(Math.random()*10)}: {section.caption}</span>
+                        <span className="text-[9px] font-black uppercase bg-violet-50 text-violet-600 px-4 py-1.5 rounded-full shadow-sm">{section.ref}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Institucional */}
+            <div className="absolute bottom-10 left-20 right-20 flex flex-col items-center gap-3 border-t border-slate-100 pt-10">
+               <div className="flex items-center gap-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">
+                 <span>{docData.author}</span>
+                 <div className="w-2 h-2 bg-violet-100 rounded-full" />
+                 <span>ISC 2026</span>
+                 <div className="w-2 h-2 bg-violet-100 rounded-full" />
+                 <span>Pág. 01</span>
+               </div>
+               <p className="text-[8px] text-slate-300 font-bold uppercase tracking-[0.2em] text-center">
+                 Generado por EduDraft Pro | Inteligencia en Sistemas Computacionales | {docData.date}
+               </p>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;

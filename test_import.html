@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Test User">
+    <meta name="subject" content="Test Subject">
+    <title>Test Import Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 60px;
+            background: var(--surface);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            border-radius: 24px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--text-light);
+            margin-top: 0;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        li {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        li:hover {
+            transform: translateY(-2px);
+            background: #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        /* Metadata Badge */
+        .meta-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="meta-badge">Report Template</span>
+    <h1>Test Title</h1>
+    <h2>Test Subtitle</h2>
+
+    <p>This is a paragraph for testing import. It demonstrates how text content is structured and styled within the
+        document. The import process extracts this text directly.</p>
+
+    <ul>
+        <li>Key Point 1</li>
+        <li>Key Point 2</li>
+        <li>Key Point 3</li>
+        <li>Key Point 4</li>
+    </ul>
+
+    <table>
+        <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+            <th>Header 3</th>
+        </tr>
+        <tr>
+            <td>Row 1 Col 1</td>
+            <td>Row 1 Col 2</td>
+            <td>Row 1 Col 3</td>
+        </tr>
+        <tr>
+            <td>Row 2 Col 1</td>
+            <td>Row 2 Col 2</td>
+            <td>Row 2 Col 3</td>
+        </tr>
+    </table>
+
+    <p>Additional paragraph to verify multiple text blocks.</p>
+</body>
+
+</html>

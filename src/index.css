@@ -1,0 +1,170 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-outfit: 'Outfit', sans-serif;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-200;
+    background-image:
+      radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.15), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.15), transparent 25%);
+    background-attachment: fixed;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700/50 rounded-full hover:bg-slate-600;
+  }
+
+  @media print {
+
+    /* Reset root container constraints */
+    html,
+    body {
+      height: auto !important;
+      overflow: visible !important;
+      background: white !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Do NOT set fixed width on body, let it adapt to the page context */
+    }
+
+    /* CRITICAL: Reset layout constraints on all potential scroll containers */
+    #root,
+    main,
+    div[class*="overflow-"],
+    .h-screen,
+    .min-h-screen {
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+      position: static !important;
+      margin: 0 !important;
+    }
+
+    /* Hide everything by default using visibility */
+    body * {
+      visibility: hidden;
+    }
+
+    /* Specifically unhide the PDF content and its children */
+    #pdf-content,
+    #pdf-content * {
+      visibility: visible;
+    }
+
+    /* Position the content to fill the printed page */
+    #pdf-content {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      /* Fill the page width exactly */
+      min-height: 11in !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      z-index: 9999;
+    }
+
+    /* Ensure specific page breaks work and enforce Letter size */
+    @page {
+      margin: 0;
+      size: letter;
+    }
+
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+      min-height: 11in;
+    }
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism Panels */
+  .glass-panel {
+    @apply bg-slate-900/60 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  .glass-input {
+    @apply bg-slate-800/40 border-slate-700/50 text-slate-200 placeholder-slate-500 focus:bg-slate-800/60 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all duration-300;
+  }
+
+  .glass-button {
+    @apply bg-white/5 hover:bg-white/10 border border-white/5 text-slate-300 hover:text-white transition-all duration-300;
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Utilities */
+.main-gradient {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+}
+
+.geometric-mask {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
